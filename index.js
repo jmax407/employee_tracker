@@ -3,8 +3,8 @@ const conn = require('./connection');
 const consoleTable = require('console.table');
 
 function startPrompt() {
-inquirer.prompt([
-        {   type: 'list',
+    inquirer.prompt([{
+            type: 'list',
             message: "What would you like to do?",
             name: "start",
             choices: [
@@ -16,53 +16,54 @@ inquirer.prompt([
                 'add an employee',
                 'update an employee role'
             ]
-        }
-    ])
-    .then(answers => {
-      switch(answers.start) {
-        case 'view all departments': {
-          return viewDepartments();  
-        }
-        case 'view all roles': {
-            return viewAllRoles();
-        }
-        case 'view all employees': {
-            return viewAllEmployees();  
-        }
-        case 'add a department': {
-            return addDepartment(); 
-        }
-        case 'add a role': {
-            return addRole();  
-        }
-        case 'add an employee': {
-            return addEmployee(); 
-        }
-        case 'update an employee role': {
-            return updateRole();   
-        }
-    }
-    }).catch(error => {
-        if(error) throw error;
-    });
+        }])
+        .then(answers => {
+            switch (answers.start) {
+                case 'view all departments': {
+                    return viewDepartments();
+                }
+                case 'view all roles': {
+                    return viewAllRoles();
+                }
+                case 'view all employees': {
+                    return viewAllEmployees();
+                }
+                case 'add a department': {
+                    return addDepartment();
+                }
+                case 'add a role': {
+                    return addRole();
+                }
+                case 'add an employee': {
+                    return addEmployee();
+                }
+                case 'update an employee role': {
+                    return updateRole();
+                }
+            }
+        }).catch(error => {
+            if (error) throw error;
+        });
 
 }
-    
+
 startPrompt();
 
 function viewDepartments() {
-  conn.query(
-      `SELECT * FROM departments`, function(err, rows, fields) {
-        console.log(`\n`);
-        console.table(rows);
-      }
-  )
-  startPrompt();
+    conn.query(
+        `SELECT * FROM departments`,
+        function(err, rows, fields) {
+            console.log(`\n`);
+            console.table(rows);
+        }
+    )
+    startPrompt();
 }
 
 function viewAllRoles() {
     conn.query(
-        `SELECT * FROM roles`, function(err, rows, fields) {
+        `SELECT * FROM roles`,
+        function(err, rows, fields) {
             console.log(`\n`);
             console.table(rows);
         }
@@ -79,7 +80,9 @@ function viewAllEmployees() {
         ON employees.role_id = roles.id
         JOIN departments 
         ON roles.department_id = departments.id
-        `,function(err, rows, fields) {
+        ORDER BY employees.last_name
+        `,
+        function(err, rows, fields) {
             console.log(`\n`);
             console.table(rows);
         }
@@ -88,116 +91,126 @@ function viewAllEmployees() {
 }
 
 function addDepartment() {
-    inquirer.prompt([
-        {   type: 'input',
-            message: "Enter name of new Department",
-            name: "department"
-        }
-    ]).then(answers => {
+    inquirer.prompt([{
+        type: 'input',
+        message: "Enter name of new Department",
+        name: "department"
+    }]).then(answers => {
         conn.query(`INSERT INTO departments (department_name) VALUES (?)`, answers.department, function() {
-            console.log( `${answers.department} Department has been added to the database`);
+            console.log(`${answers.department} Department has been added to the database`);
         })
         startPrompt();
     });
-    
+
 }
-// function addRole() {
-//     const deparments = conn.query(`SELECT * departments`);
-//     const departmentChoices = deparments.map(({id, name}) => ({
-//         name: name,
-//         value: id
-//     }));
 
-//         inquirer.prompt([
-//             {   type: 'input',
-//                 message: "Enter name of new Role",
-//                 name: "title"
-//             },
-//             {   type: 'input',
-//                 message: "What is the starting salary?",
-//                 name: "salary"
-//             },
-//             {   type: 'list',
-//                 message: "Choose department to add Role to",
-//                 name: "department",
-//                 choices: departmentChoices
-//             }
-//         ])
-//         .then(answers => {
-
-//         })
-//         .catch(error => {
-//             if(error) throw error;
-//         });
-
-// }
 function addRole() {
     let departmentInfo;
     conn.query('SELECT * FROM departments', function(err, rows, fields) {
         departmentInfo = rows.map(departmentName => departmentName.id + " " + departmentName.department_name)
-        inquirer.prompt([
-            {   type: 'input',
-                message: "Enter name of new Role",
-                name: "title"
-            },
-            {   type: 'input',
-                message: "What is the starting salary?",
-                name: "salary"
-            },
-            {   type: 'list',
-                message: "Choose department to add Role to",
-                name: "department",
-                choices: departmentInfo
-            }
-        ])
-        .then(answers => {
-            conn.query(`INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`, answers.title, answers.salary, answers.department, function() {
-                console.log( `The ${answers.department} Department has been assigned to this role`);
+        inquirer.prompt([{
+                    type: 'input',
+                    message: "Enter name of new Role",
+                    name: "title"
+                },
+                {
+                    type: 'input',
+                    message: "What is the starting salary?",
+                    name: "salary"
+                },
+                {
+                    type: 'list',
+                    message: "Choose department to add Role to",
+                    name: "department",
+                    choices: departmentInfo
+                }
+            ])
+            .then(answers => {
+                let departmentId = answers.department.split(" ", 1);
+
+                conn.query(`INSERT INTO roles(title,salary,department_id) VALUES (?,?,?)`, [answers.title, answers.salary, departmentId], function(err, res) {
+                    if (err) console.log(err);
+                })
                 startPrompt();
             })
-            roleshandler(answers.title, answers.salary, answers.department);
-            // conn.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${title}',${salary},${department})`, function() {
-            //     console.log( `${department} Department has been added to the database`);
-            // })
-            // conn.query(`INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`)
-            // console.log(title, salary, department);
-           
-        })
     })
-      
-}
-function roleshandler(title, salary, department) {
-    let departmentId = department.split(" ", 1);
-    conn.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${title}',${salary},${departmentId});`, function() {
-        console.log( `${department} Department has been added to the database`);
-        startPrompt();
-    })
-}
-function addEmployee() {
-    inquirer.prompt([
-        {   type: 'input',
-            message: "Employee First Name",
-            name: "firstName"
-        },
-        {   type: 'input',
-            message: "Employee Last Name",
-            name: "lastName"
-        },
-        {   type: 'list',
-            message: "Job title",
-            name: "title",
-            choices: [
-                'Sales Agent',
-                'Sales Manager',
-                'Engineering Team Director',
 
-            ]
-        }
-    ])
-    startPrompt();
+}
+
+function addEmployee() {
+    let roleChoices;
+    conn.query('SELECT * FROM roles', function(err, rows, fields) {
+        roleChoices = rows.map(employeeRoles => employeeRoles.id + " " + employeeRoles.title)
+        inquirer.prompt([{
+                    type: 'input',
+                    message: "Employee First Name",
+                    name: "firstName"
+                },
+                {
+                    type: 'input',
+                    message: "Employee Last Name",
+                    name: "lastName"
+                },
+                {
+                    type: 'list',
+                    message: "Job title",
+                    name: "title",
+                    choices: roleChoices
+
+                }
+            ])
+            .then(answers => {
+                let employeeTitle = answers.title.split(" ", 1);
+                conn.query(`INSERT INTO employees(first_name, last_name, role_id) VALUES(?,?,?)`, [answers.firstName, answers.lastName, employeeTitle], function(err, res) {
+                    if (err) console.log(err);
+                });
+                startPrompt();
+            })
+
+    })
 }
 
 function updateRole() {
-    `SELECT * FROM employees`
-    startPrompt();  
+    let selectEmployee;    
+    conn.query(`SELECT id, first_name, last_name FROM employees ORDER BY last_name`, function(err, rows, fields) {
+        selectEmployee = rows.map(employeeEL => employeeEL.id + " " + employeeEL.first_name + " " + employeeEL.last_name)
+
+        inquirer.prompt([{
+            type: 'list',
+            message: "Choose employee to update",
+            name: "selectEmployee",
+            choices: selectEmployee
+        }]).then(answers => {
+            employeeData = answers.selectEmployee.split(" ", 1);
+            currentEmployeeID = employeeData;
+            console.log(currentEmployeeID);
+            
+            assignNewRole(currentEmployeeID);
+
+            }
+
+        )
+    })
+
+
+
+}
+
+function assignNewRole(data) {
+    let dataEl = data;
+    conn.query(`SELECT id, title FROM roles ORDER BY title`, function(err, rows, fields) {
+        rolesList = rows.map( rowsEL => rowsEL.id + " " + rowsEL.title)
+        inquirer.prompt([{
+            type: 'list',
+            message: 'Select new Role',
+            name: 'newRole',
+            choices: rolesList
+        }])
+        .then(answers => {
+            let roleId = answers.newRole.split(" ", 1)
+            console.log(data);
+            conn.query(`UPDATE employees SET role_id=${roleId} WHERE id=${dataEl}`)
+            startPrompt();
+        })
+    })
 }
