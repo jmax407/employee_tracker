@@ -10,7 +10,6 @@ A Command Line CMS for updating and adding Employee Data
 
 # Table of Contents
 *[Demo](#demo)  
-*[Technology](#technology)  
 *[Features](#features)  
 *[Installation](#installation)  
 *[Usage](#usage)  
@@ -22,10 +21,6 @@ A Command Line CMS for updating and adding Employee Data
 # Demo
 [DEMO: Employee Tracker](https://drive.google.com/file/d/1NUuoNG48AQyCn8ialSN5jevHAaWgGFrJ/preview)
 
-# Technology 
-| Technology | Description                        |Links ↘️ |
-| ---------- | -----------------------------------| ------|  
-| ![node.js inquirer.js, mysql2](https://shields.io/static/v1?label=node.js inquirer.js, mysql2&message=40&color=brightgreen&style=flat-square) | javascript mysql | []() |
 
 # Features
 uses node.js, mysql2, inquirer.js
